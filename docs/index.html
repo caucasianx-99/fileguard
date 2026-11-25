@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FileGuard Agency | Catalog Risk Dashboard</title>
+
+<meta
+  name="description"
+  content="Read-only store and supplier catalog risk analysis."
+>
+
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23070b12'/%3E%3Cpath d='M32 8 L50 15 V30 C50 44 42 52 32 57 C22 52 14 44 14 30 V15 Z' fill='%232563eb'/%3E%3C/svg%3E"
+>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #070b12;
+  --panel: #111827;
+  --raised: #182338;
+  --border: #354259;
+  --text: #eaf2ff;
+  --muted: #b3c1d3;
+  --blue: #60a5fa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --red: #fb7185;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.55 Arial, sans-serif;
+}
+
+main, footer {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 28px 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+h1 {
+  font-size: clamp(27px, 4vw, 38px);
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 21px;
+  margin-top: 0;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+p, .help {
+  color: var(--muted);
+}
+
+a {
+  color: var(--blue);
+}
+
+.readonly {
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: #172b47;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 25px;
+  margin: 21px 0;
+}
+
+.grid, .mapping-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin: 13px 0 6px;
+}
+
+input:not([type="checkbox"]), select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  background: var(--raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font: inherit;
+}
+
+input:focus,
+select:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"] {
+  margin: 3px 9px 0 0;
+}
+
+input[type="file"] {
+  padding: 13px;
+}
+
+input[readonly] {
+  opacity: .8;
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  font-weight: 400;
+  gap: 3px;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 18px;
+  margin: 14px 10px 4px 0;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #1d324b;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.notice {
+  min-height: 20px;
+  white-space: pre-line;
+}
+
+.help {
+  font-size: 12px;
+}
+
+.mapping-field {
+  margin: 10px 0;
+  padding: 12px;
+  background: var(--raised);
+  border-radius: 10px;
+}
+
+.mapping-field label {
+  margin-top: 0;
+}
+
+.mapping-field small {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+details, .soft {
+  background: var(--raised);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 15px 0;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.checkline {
+  margin: 6px 0;
+}
+
+.checkline.ok {
+  color: var(--green);
+}
+
+.checkline.missing {
+  color: var(--amber);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 27px;
+}
+
+.safe {
+  color: var(--green);
+}
+
+.review {
+  color: var(--amber);
+}
+
+.critical {
+  color: var(--red);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th, td {
+  padding: 11px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: var(--raised);
+}
+
+.report-summary {
+  background: var(--raised);
+  padding: 18px;
+  border-radius: 11px;
+}
+
+.report-list li {
+  margin: 9px 0;
+  overflow-wrap: anywhere;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+
+footer a {
+  margin: 0 5px;
+}
+
+@media (max-width: 720px) {
+  .grid, .mapping-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card {
+    padding: 17px;
+  }
+
+  header {
+    flex-wrap: wrap;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 16mm;
+}
+
+@media print {
+  :root {
+    color-scheme: light !important;
+  }
+
+  html, body {
+    background: #fff !important;
+    color: #172b4d !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  header,
+  main > h1,
+  main > .intro,
+  #uploadSection,
+  #mappingSection,
+  #resultsSection,
+  #printBtn,
+  footer {
+    display: none !important;
+  }
+
+  #reportSection {
+    display: block !important;
+  }
+
+  #reportCard {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  #reportCard, #reportCard * {
+    color: #172b4d !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #reportCard .report-summary {
+    background: #f2f5fa !important;
+  }
+
+  .report-summary {
+    break-inside: avoid;
+  }
+}
+</style>
+</head>
+
+<body>
+<main>
+  <header>
+    <h2>FileGuard Agency</h2>
+    <span class="readonly">READ-ONLY</span>
+  </header>
+
+  <h1>Catalog Risk Preflight</h1>
+
+  <p class="intro">
+    Compare your store export with a supplier catalog.
+    FileGuard does not change your store. Files are analyzed in this browser, not uploaded to an analysis server. The first analysis downloads the Python runtime and libraries from public CDNs.
+  </p>
+
+  <section class="card" id="uploadSection">
+    <h2>1. Upload catalog files</h2>
+
+    <div class="grid">
+      <div>
+        <label for="agency">Agency name</label>
+        <input id="agency" placeholder="Your agency">
+      </div>
+
+      <div>
+        <label for="client">Client name</label>
+        <input id="client" placeholder="Client store">
+      </div>
+
+      <div>
+        <label for="storeFile">
+          Current store catalog (CSV/XLSX, max 5 MB)
+        </label>
+
+        <input
+          id="storeFile"
+          type="file"
+          accept=".csv,.xlsx"
+        >
+      </div>
+
+      <div>
+        <label for="supplierFile">
+          New supplier catalog (CSV/XLSX, max 5 MB)
+        </label>
+
+        <input
+          id="supplierFile"
+          type="file"
+          accept=".csv,.xlsx"
+        >
+      </div>
+    </div>
+
+    <p class="help">
+      Free browser edition: up to 30,000 rows per file. No account or payment.
+    </p>
+
+    <button type="button" id="previewBtn">
+      Read files &amp; map columns
+    </button>
+
+    <p
+      id="notice"
+      class="notice"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <p class="help">
+      Download the official fictional examples:
+      <a href="./samples/fileguard-sample-store.csv" download>Sample store CSV</a> ·
+      <a href="./samples/fileguard-sample-supplier.csv" download>Sample supplier CSV</a>.
+      These files contain fictional demonstration data.
+      <button type="button" class="secondary" id="demoBtn">Try fictional sample files</button>
+    </p>
+  </section>
+
+  <section class="card" id="mappingSection" hidden>
+    <h2>2. Match columns and confirm business rules</h2>
+
+    <p class="help">
+      Review suggested mappings and example values.
+      Missing business information is never guessed.
+    </p>
+
+    <div class="mapping-cols">
+      <div>
+        <h3>Store fields</h3>
+        <div id="storeMapping"></div>
+      </div>
+
+      <div>
+        <h3>Supplier fields</h3>
+        <div id="supplierMapping"></div>
+      </div>
+    </div>
+
+    <h3>Confirm missing catalog information</h3>
+
+    <label class="checkbox" for="storePackSingle">
+      <input type="checkbox" id="storePackSingle">
+      Store products are sold as single units
+      (pack size = 1) when no pack size column is mapped.
+    </label>
+
+    <label class="checkbox" for="supplierPackSingle">
+      <input type="checkbox" id="supplierPackSingle">
+      Supplier products are sold as single units
+      (pack size = 1) when no pack size column is mapped.
+    </label>
+
+    <label for="currencyAssumption">
+      Currency for files without a mapped currency column
+    </label>
+
+    <select id="currencyAssumption">
+      <option value="">-- Not confirmed --</option>
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">GBP</option>
+      <option value="CAD">CAD</option>
+      <option value="AUD">AUD</option>
+      <option value="TRY">TRY</option>
+      <option value="AZN">AZN</option>
+    </select>
+
+    <p class="help">
+      Only used when the currency column is absent.
+      Existing currency conflicts are never overridden.
+    </p>
+
+    <div class="grid">
+      <div>
+        <label for="storeNumberFormat">
+          Store file number format
+        </label>
+
+        <select id="storeNumberFormat">
+          <option value="us">
+            1,234.56 — US/UK-style
+          </option>
+
+          <option value="eu">
+            1.234,56 — European-style
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label for="supplierNumberFormat">
+          Supplier file number format
+        </label>
+
+        <select id="supplierNumberFormat">
+          <option value="us">
+            1,234.56 — US/UK-style
+          </option>
+
+          <option value="eu">
+            1.234,56 — European-style
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <label class="checkbox" for="publishedEquals">
+      <input type="checkbox" id="publishedEquals">
+      Published stock equals on-hand stock
+      when the published quantity column is absent.
+    </label>
+
+    <label for="inventoryMode">
+      Who owns the inventory?
+    </label>
+
+    <select id="inventoryMode">
+      <option value="file">
+        Use the inventory mode column in the store file
+      </option>
+
+      <option value="owned">
+        We own the stock in our store
+      </option>
+
+      <option value="supplier_managed">
+        Supplier ships directly; store displays supplier stock
+      </option>
+
+      <option value="hybrid">
+        Mixed ownership; manual review only
+      </option>
+    </select>
+
+    <label class="checkbox" for="approveStockRule">
+      <input type="checkbox" id="approveStockRule">
+      I explicitly approve the supplier-managed
+      published-stock rule for this catalog.
+    </label>
+
+    <details>
+      <summary>Advanced: safety stock buffer</summary>
+
+      <label for="bufferQty">
+        Reserve units before publishing supplier stock
+      </label>
+
+      <input
+        id="bufferQty"
+        type="number"
+        min="0"
+        max="1000000"
+        step="1"
+        value="0"
+      >
+    </details>
+
+    <div class="soft">
+      <h3>
+        Pre-analysis readiness
+      </h3>
+
+      <div id="readiness" role="status"></div>
+
+      <p class="help">
+        Missing information disables affected checks.
+        Confirm the mappings before analyzing.
+      </p>
+    </div>
+
+    <button type="button" id="analyzeBtn">
+      Analyze catalog risks
+    </button>
+  </section>
+
+  <section class="card" id="resultsSection" hidden>
+    <h2>3. Risk analysis results</h2>
+
+    <div class="stats">
+      <div class="stat">
+        <strong id="totalCount">0</strong>
+        Total rows
+      </div>
+
+      <div class="stat">
+        <strong id="safeCount" class="safe">0</strong>
+        SAFE
+      </div>
+
+      <div class="stat">
+        <strong id="reviewCount" class="review">0</strong>
+        REVIEW
+      </div>
+
+      <div class="stat">
+        <strong id="criticalCount" class="critical">0</strong>
+        CRITICAL
+      </div>
+    </div>
+
+    <p
+      id="riskNotice"
+      class="notice"
+      role="status"
+    ></p>
+
+    <p id="configSummary" class="help"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Product</th>
+            <th>Match</th>
+            <th>Old cost</th>
+            <th>New cost</th>
+            <th>Gross margin</th>
+            <th>Status</th>
+            <th>Findings</th>
+          </tr>
+        </thead>
+
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+
+    <p id="resultsLimit" class="help"></p>
+
+    <h3>Manual-review exports</h3>
+
+    <p id="exportStatus" class="help"></p>
+
+    <button type="button" id="csvBtn">
+      Download review candidate CSV
+    </button>
+
+    <button
+      type="button"
+      class="secondary"
+      id="findingsCsvBtn"
+    >
+      Download ALL findings CSV
+    </button>
+
+    <button
+      type="button"
+      class="secondary"
+      id="reportBtn"
+    >
+      Generate branded report
+    </button>
+
+    <p class="help">
+      CSV exports are for manual investigation,
+      never direct import.
+    </p>
+  </section>
+
+  <section id="reportSection" hidden>
+    <div class="card" id="reportCard">
+      <h2 id="reportAgency">FileGuard</h2>
+
+      <strong>Catalog Risk Report</strong>
+
+      <p>
+        <strong>Client:</strong>
+        <span id="reportClient"></span>
+      </p>
+
+      <p>
+        <strong>Report date:</strong>
+        <span id="reportDate"></span>
+      </p>
+
+      <p id="reportFiles" class="help"></p>
+
+      <div class="report-summary">
+        <h3 id="reportDecision"></h3>
+        <p id="reportStats"></p>
+        <p id="reportConfig"></p>
+        <p id="reportConfirmations"></p>
+        <p id="reportThresholds"></p>
+        <p id="reportExport"></p>
+      </div>
+
+      <h3>Key findings</h3>
+
+      <ul id="reportFindings" class="report-list"></ul>
+
+      <p id="reportCoverage" class="help"></p>
+
+      <p class="help">
+        Advisory analysis only. Verify source data
+        before any external update.
+      </p>
+
+      <hr>
+
+      <p class="help">
+        Prepared by
+        <span id="reportFooterAgency"></span>
+        · Powered by FileGuard
+      </p>
+    </div>
+
+    <button type="button" id="printBtn">
+      Print / Save report as PDF
+    </button>
+  </section>
+</main>
+
+<footer>
+  <strong>FileGuard Agency</strong>
+
+  <p>
+    Independently operated by Shahin Caucasian
+    from Baku, Azerbaijan.
+  </p>
+
+  <a href="./">Home</a> · <a href="https://github.com/caucasianx-99/fileguard">Source code</a>
+  <p>Free portfolio edition. No account, subscription or store connection. Findings are for manual review only.</p>
+</footer>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+const fields = {
+  store: [
+    "sku",
+    "product_name",
+    "selling_price",
+    "current_cost",
+    "store_on_hand_qty",
+    "store_published_qty",
+    "inventory_mode",
+    "barcode",
+    "currency",
+    "pack_size",
+    "location_code"
+  ],
+
+  supplier: [
+    "supplier_sku",
+    "supplier_product_name",
+    "new_cost",
+    "supplier_available_qty",
+    "barcode",
+    "currency",
+    "pack_size",
+    "supplier_location",
+    "lead_time_days",
+    "discontinued"
+  ]
+};
+
+const fieldLabels = {
+  sku: "Product SKU",
+  supplier_sku: "Supplier SKU",
+  product_name: "Product title",
+  supplier_product_name: "Supplier title",
+  selling_price: "Selling price",
+  current_cost: "Current unit cost",
+  new_cost: "New unit cost",
+  store_on_hand_qty: "Quantity in store",
+  store_published_qty: "Published stock",
+  supplier_available_qty: "Supplier available units",
+  inventory_mode: "Inventory ownership",
+  barcode: "Barcode (EAN / UPC / GTIN)",
+  currency: "Currency",
+  pack_size: "Units per pack",
+  location_code: "Store location",
+  supplier_location: "Supplier location",
+  lead_time_days: "Lead time (days)",
+  discontinued: "Discontinued"
+};
+
+const aliases = {
+  store: {
+    sku: [
+      "sku",
+      "variant sku",
+      "item no",
+      "item number"
+    ],
+
+    product_name: [
+      "title",
+      "product title",
+      "product name",
+      "name"
+    ],
+
+    selling_price: [
+      "price",
+      "variant price",
+      "selling price",
+      "retail price"
+    ],
+
+    current_cost: [
+      "cost per item",
+      "cost",
+      "unit cost",
+      "current cost"
+    ],
+
+    store_on_hand_qty: [
+      "inventory quantity",
+      "variant inventory qty",
+      "stock",
+      "qty",
+      "on hand"
+    ],
+
+    store_published_qty: [
+      "published stock",
+      "published quantity",
+      "available for sale"
+    ],
+
+    inventory_mode: [
+      "inventory mode"
+    ],
+
+    barcode: [
+      "barcode",
+      "barcodes",
+      "variant barcode",
+      "ean",
+      "gtin",
+      "upc"
+    ],
+
+    currency: [
+      "currency",
+      "currency code"
+    ],
+
+    pack_size: [
+      "pack size",
+      "case pack",
+      "units per pack"
+    ],
+
+    location_code: [
+      "location",
+      "location code"
+    ]
+  },
+
+  supplier: {
+    supplier_sku: [
+      "supplier sku",
+      "sku",
+      "item no",
+      "item number",
+      "article",
+      "part number"
+    ],
+
+    supplier_product_name: [
+      "description",
+      "product name",
+      "name",
+      "title"
+    ],
+
+    new_cost: [
+      "wholesale price",
+      "cost",
+      "new cost",
+      "unit cost",
+      "supplier cost",
+      "purchase price"
+    ],
+
+    supplier_available_qty: [
+      "stock",
+      "qty",
+      "available",
+      "inventory quantity",
+      "quantity"
+    ],
+
+    barcode: [
+      "ean",
+      "gtin",
+      "upc",
+      "barcode",
+      "barcodes"
+    ],
+
+    currency: [
+      "currency",
+      "currency code"
+    ],
+
+    pack_size: [
+      "case pack",
+      "pack size",
+      "units per pack"
+    ],
+
+    supplier_location: [
+      "location",
+      "warehouse"
+    ],
+
+    lead_time_days: [
+      "lead time",
+      "lead time days"
+    ],
+
+    discontinued: [
+      "discontinued",
+      "is discontinued"
+    ]
+  }
+};
+
+const rank = {
+  CRITICAL: 0,
+  REVIEW: 1,
+  SAFE: 2
+};
+
+let latestPreview = null;
+let latestResult = null;
+
+
+
+function normalizeHeader(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "")
+    .trim();
+}
+
+
+function officialSampleNamesSelected() {
+  const store = $("storeFile").files[0];
+  const supplier = $("supplierFile").files[0];
+
+  return (
+    store?.name === "fileguard-sample-store.csv" &&
+    supplier?.name === "fileguard-sample-supplier.csv"
+  );
+}
+
+
+function refreshAnalyzeButton() {
+  $("analyzeBtn").disabled = false;
+}
+
+
+function clearResults() {
+  latestResult = null;
+
+  $("resultsSection").hidden = true;
+  $("reportSection").hidden = true;
+
+  refreshAnalyzeButton();
+}
+
+
+function uploadForm() {
+  const store = $("storeFile").files[0];
+  const supplier = $("supplierFile").files[0];
+
+  if (!store || !supplier) {
+    throw new Error(
+      "Select both catalog files."
+    );
+  }
+
+  if (
+    store.size > 5 * 1024 * 1024 ||
+    supplier.size > 5 * 1024 * 1024
+  ) {
+    throw new Error(
+      "Each file must be 5 MB or smaller."
+    );
+  }
+
+  const form = new FormData();
+
+  form.append("current_store", store);
+  form.append("supplier", supplier);
+
+  return form;
+}
+
+
+let browserWorker = null;
+let busy = false;
+async function requestJson(path, form) {
+  if (busy) throw new Error("An analysis is already running.");
+  busy = true;
+  const controls = Array.from(document.querySelectorAll("input, select, button"));
+  const saved = controls.map(el => el.disabled);
+  controls.forEach(el => el.disabled = true);
+  try {
+    const store = form.get("current_store"), supplier = form.get("supplier");
+    const [storeData, supplierData] = await Promise.all([store.arrayBuffer(), supplier.arrayBuffer()]);
+    const options = {};
+    for (const key of ["store_mapping", "supplier_mapping", "inventory_config"]) {
+      if (form.has(key)) options[key] = JSON.parse(form.get(key));
+    }
+    if (!browserWorker) browserWorker = new Worker("./worker.js");
+    return await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => { browserWorker.terminate(); browserWorker = null; reject(new Error("Analysis timed out. Try smaller files or reload.")); }, 240000);
+      browserWorker.onmessage = ({data}) => {
+        if (data.progress) { $("notice").textContent = data.progress; return; }
+        clearTimeout(timeout);
+        if (data.error) { browserWorker.terminate(); browserWorker = null; reject(new Error(data.error)); }
+        else resolve(data.result);
+      };
+      browserWorker.onerror = () => { clearTimeout(timeout); browserWorker.terminate(); browserWorker = null; reject(new Error("Browser engine failed to load. Check your internet connection and reload.")); };
+      browserWorker.postMessage({path, storeName: store.name, supplierName: supplier.name, storeData, supplierData, options}, [storeData, supplierData]);
+    });
+  } finally {
+    busy = false;
+    controls.forEach((el, i) => el.disabled = saved[i]);
+  }
+}
+
+$("demoBtn").addEventListener("click", async () => {
+  const button = $("demoBtn");
+  button.disabled = true;
+  try {
+    for (const [kind, input] of [["store", "storeFile"], ["supplier", "supplierFile"]]) {
+      const name = `fileguard-sample-${kind}.csv`;
+      const response = await fetch(`./samples/${name}`);
+      if (!response.ok) throw new Error("Sample download failed.");
+      const dt = new DataTransfer();
+      dt.items.add(new File([await response.blob()], name, {type:"text/csv"}));
+      $(input).files = dt.files;
+      $(input).dispatchEvent(new Event("change"));
+    }
+    $("inventoryMode").value = "owned";
+    $("publishedEquals").checked = true;
+    $("previewBtn").click();
+  } catch (error) { $("notice").textContent = error.message; }
+  finally { button.disabled = false; }
+});
+
+
+function createFieldMapping(kind, info) {
+  const root = $(kind + "Mapping");
+  root.replaceChildren();
+
+  const assigned = new Set();
+
+  for (const field of fields[kind]) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "mapping-field";
+
+    const label = document.createElement("label");
+    const select = document.createElement("select");
+    const example = document.createElement("small");
+
+    const required = field === fields[kind][0];
+    const id = kind + "_" + field;
+
+    select.id = id;
+    label.htmlFor = id;
+
+    label.textContent =
+      fieldLabels[field] + (required ? " *" : "");
+
+    select.dataset.field = field;
+    select.dataset.required = String(required);
+
+    select.add(
+      new Option(
+        required
+          ? "-- Select required column --"
+          : "-- Not mapped --",
+        ""
+      )
+    );
+
+    for (const column of info.columns) {
+      select.add(
+        new Option(column, column)
+      );
+    }
+
+    const options = [
+      field,
+      ...(aliases[kind][field] || [])
+    ].map(normalizeHeader);
+
+    const found = info.columns.find(column => (
+      options.includes(normalizeHeader(column)) &&
+      !assigned.has(column)
+    ));
+
+    if (found) {
+      select.value = found;
+      assigned.add(found);
+    }
+
+    example.className = "help";
+
+    function renderExample() {
+      const value = String(
+        info.example?.[select.value] ?? ""
+      ).slice(0, 70);
+
+      example.textContent =
+        field +
+        (
+          select.value
+            ? " · Example: " + value
+            : ""
+        );
+    }
+
+    select.addEventListener("change", () => {
+      renderExample();
+      clearResults();
+      showReadiness();
+    });
+
+    renderExample();
+
+    wrapper.append(label, select, example);
+    root.append(wrapper);
+  }
+}
+
+
+function selectedMapping(kind) {
+  const mapping = {};
+  const used = new Set();
+
+  const selectors = $(
+    kind + "Mapping"
+  ).querySelectorAll("select");
+
+  for (const select of selectors) {
+    const field = select.dataset.field;
+
+    if (
+      select.dataset.required === "true" &&
+      !select.value
+    ) {
+      throw new Error(
+        "Required mapping missing: " +
+        fieldLabels[field]
+      );
+    }
+
+    if (!select.value) {
+      continue;
+    }
+
+    if (used.has(select.value)) {
+      throw new Error(
+        "A source column was assigned twice: " +
+        select.value
+      );
+    }
+
+    used.add(select.value);
+    mapping[field] = select.value;
+  }
+
+  return mapping;
+}
+
+
+function analysisConfig() {
+  const value = $("bufferQty").value.trim();
+
+  if (
+    !/^\d+$/.test(value) ||
+    !Number.isSafeInteger(Number(value)) ||
+    Number(value) > 1000000
+  ) {
+    throw new Error(
+      "Stock buffer must be an integer " +
+      "from 0 to 1,000,000."
+    );
+  }
+
+  return {
+    mode: $("inventoryMode").value,
+
+    buffer_qty: Number(value),
+
+    approve_supplier_stock_rule:
+      $("approveStockRule").checked,
+
+    store_pack_single:
+      $("storePackSingle").checked,
+
+    supplier_pack_single:
+      $("supplierPackSingle").checked,
+
+    published_equals_on_hand:
+      $("publishedEquals").checked,
+
+    assumed_currency:
+      $("currencyAssumption").value,
+
+    store_number_format:
+      $("storeNumberFormat").value,
+
+    supplier_number_format:
+      $("supplierNumberFormat").value
+  };
+}
+
+
+function readinessChecks() {
+  const store = selectedMapping("store");
+  const supplier = selectedMapping("supplier");
+  const settings = analysisConfig();
+
+  const matching = Boolean(
+    store.sku &&
+    supplier.supplier_sku
+  );
+
+  const packs = Boolean(
+    (store.pack_size || settings.store_pack_single) &&
+    (supplier.pack_size || settings.supplier_pack_single)
+  );
+
+  const currency = Boolean(
+    (store.currency || settings.assumed_currency) &&
+    (supplier.currency || settings.assumed_currency)
+  );
+
+  const financial = Boolean(
+    matching &&
+    packs &&
+    currency &&
+    store.selling_price &&
+    store.current_cost &&
+    supplier.new_cost
+  );
+
+  const stock = Boolean(
+    matching &&
+    packs &&
+    store.store_on_hand_qty &&
+    (
+      store.store_published_qty ||
+      settings.published_equals_on_hand
+    ) &&
+    supplier.supplier_available_qty &&
+    (
+      settings.mode !== "file" ||
+      store.inventory_mode
+    )
+  );
+
+  return [
+    {
+      ok: matching,
+      label: "Product matching",
+      missing: matching ? "" : "SKU columns"
+    },
+
+    {
+      ok: financial,
+      label: "Costs and margins",
+      missing: [
+        !store.selling_price && "selling price",
+        !store.current_cost && "old cost",
+        !supplier.new_cost && "new cost",
+        !packs && "verified pack sizes",
+        !currency && "currency"
+      ].filter(Boolean).join(", ")
+    },
+
+    {
+      ok: stock,
+      label: "Inventory",
+      missing: [
+        !store.store_on_hand_qty && "on-hand stock",
+
+        (
+          !store.store_published_qty &&
+          !settings.published_equals_on_hand
+        ) && "published stock confirmation",
+
+        !supplier.supplier_available_qty && "supplier stock",
+        !packs && "verified pack sizes",
+
+        (
+          settings.mode === "file" &&
+          !store.inventory_mode
+        ) && "inventory ownership"
+
+      ].filter(Boolean).join(", ")
+    }
+  ];
+}
+
+
+function showReadiness() {
+  if (!latestPreview) {
+    return;
+  }
+
+  const root = $("readiness");
+  root.replaceChildren();
+
+  try {
+    for (const item of readinessChecks()) {
+      const line = document.createElement("div");
+
+      line.className =
+        "checkline " +
+        (item.ok ? "ok" : "missing");
+
+      line.textContent = item.ok
+        ? "✓ " + item.label + " ready"
+        : "! " + item.label +
+          " — missing: " + item.missing;
+
+      root.append(line);
+    }
+
+  } catch (error) {
+    root.textContent = error.message;
+  }
+}
+
+
+for (const id of [
+  "storePackSingle",
+  "supplierPackSingle",
+  "currencyAssumption",
+  "publishedEquals",
+  "storeNumberFormat",
+  "supplierNumberFormat",
+  "inventoryMode",
+  "approveStockRule",
+  "bufferQty"
+]) {
+  $(id).addEventListener("change", () => {
+    clearResults();
+    showReadiness();
+  });
+}
+
+
+for (const id of [
+  "storeFile",
+  "supplierFile"
+]) {
+  $(id).addEventListener("change", () => {
+    latestPreview = null;
+
+    clearResults();
+
+    $("mappingSection").hidden = true;
+    $("notice").textContent = "";
+
+    refreshAnalyzeButton();
+  });
+}
+
+
+// Preview files.
+
+$("previewBtn").addEventListener(
+  "click",
+  async () => {
+    const button = $("previewBtn");
+    button.disabled = true;
+
+    $("notice").textContent =
+      "Reading catalog files...";
+
+    try {
+      latestPreview = await requestJson(
+        "/preview",
+        uploadForm()
+      );
+
+      createFieldMapping(
+        "store",
+        latestPreview.store
+      );
+
+      createFieldMapping(
+        "supplier",
+        latestPreview.supplier
+      );
+
+      showReadiness();
+      clearResults();
+
+      $("mappingSection").hidden = false;
+
+      $("notice").textContent =
+        "Store: " + latestPreview.store.rows +
+        " rows · Supplier: " +
+        latestPreview.supplier.rows +
+        " rows.";
+
+    } catch (error) {
+      $("notice").textContent =
+        error.message;
+
+    } finally {
+      button.disabled = false;
+    }
+  }
+);
+
+
+function sortedRows(rows) {
+  return [...rows].sort(
+    (a, b) =>
+      (rank[a.status] ?? 3) -
+      (rank[b.status] ?? 3)
+  );
+}
+
+
+function riskMessages(row) {
+  const messages = (row.risks || [])
+    .map(risk =>
+      String(risk.message || "")
+        .trim()
+        .replace(/[.;\s]+$/, "")
+    )
+    .filter(Boolean);
+
+  return (
+    messages.join("; ") +
+    (messages.length ? "." : "")
+  );
+}
+
+
+function formatCost(value, currency, source) {
+  const raw = String(value ?? "").trim();
+
+  if (!raw) {
+    return "n/a";
+  }
+
+  const cfg = latestResult?.inventory_configuration;
+
+  const style = source === "supplier"
+    ? (
+      cfg?.supplier_number_format ||
+      $("supplierNumberFormat").value
+    )
+    : (
+      cfg?.store_number_format ||
+      $("storeNumberFormat").value
+    );
+
+  let clean = raw
+    .replace(
+      /^[\s$€£₼₺]+|[\s$€£₼₺]+$/g,
+      ""
+    )
+    .replace(
+      /[\s\u00a0\u202f]/g,
+      ""
+    );
+
+  const usPattern =
+    /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/;
+
+  const euPattern =
+    /^[+-]?(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d+)?$/;
+
+  const valid = style === "eu"
+    ? euPattern.test(clean)
+    : usPattern.test(clean);
+
+  let printed = raw;
+
+  if (valid) {
+    clean = style === "eu"
+      ? clean.replace(/\./g, "").replace(",", ".")
+      : clean.replace(/,/g, "");
+
+    const number = Number(clean);
+
+    if (Number.isFinite(number)) {
+      printed = number.toFixed(2);
+    }
+  }
+
+  const unit = String(currency || "")
+    .trim()
+    .toUpperCase();
+
+  return (
+    printed +
+    (
+      unit
+        ? " " + unit
+        : " (currency not confirmed)"
+    )
+  );
+}
+
+
+function addCell(row, value) {
+  const td = document.createElement("td");
+
+  td.textContent =
+    value == null ? "" : String(value);
+
+  row.append(td);
+}
+
+
+function showResults(data) {
+  latestResult = data;
+
+  for (const [key, id] of [
+    ["total", "totalCount"],
+    ["safe", "safeCount"],
+    ["review", "reviewCount"],
+    ["critical", "criticalCount"]
+  ]) {
+    $(id).textContent =
+      data.summary[key];
+  }
+
+  const checks = data.file_checks || [];
+
+  $("riskNotice").textContent = checks.length
+    ? (
+      "FILE-LEVEL BLOCK:\n" +
+      checks.map(x => x.message).join("\n")
+    )
+    : data.summary.critical
+      ? "Critical findings detected. No import is authorized."
+      : data.summary.review
+        ? "Manual review required. No import is authorized."
+        : "No anomalies flagged. Not an import approval.";
+
+  $("configSummary").textContent =
+    (data.user_confirmations || []).join(" ") ||
+    "No additional user assumptions.";
+
+  const body = $("resultsBody");
+  body.replaceChildren();
+
+  for (const item of sortedRows(data.rows).slice(0, 200)) {
+    const tr = document.createElement("tr");
+
+    const margin =
+      item.cost_analysis?.gross_margin_percent;
+
+    [
+      item.sku,
+      item.product_name,
+      item.match_method,
+
+      formatCost(
+        item.current_cost,
+        item.currency,
+        "store"
+      ),
+
+      formatCost(
+        item.new_cost,
+        item.supplier_currency,
+        "supplier"
+      ),
+
+      margin == null ? "n/a" : margin + "%",
+      item.status,
+      riskMessages(item) || "No flags"
+
+    ].forEach(value => addCell(tr, value));
+
+    body.append(tr);
+  }
+
+  $("resultsLimit").textContent =
+    data.rows.length > 200
+      ? (
+        "Highest-severity 200 rows shown. " +
+        "Download ALL findings CSV for all flagged rows."
+      )
+      : "";
+
+  $("csvBtn").disabled =
+    Boolean(data.export_policy?.file_blocked) ||
+    !(data.export_candidates || []).length;
+
+  $("findingsCsvBtn").disabled =
+    !data.rows.some(row => row.status !== "SAFE") &&
+    !checks.length;
+
+  $("exportStatus").textContent =
+    (data.export_candidates || []).length +
+    " review-only export candidates.";
+
+  $("resultsSection").hidden = false;
+  $("reportSection").hidden = true;
+}
+
+
+// Run analysis.
+
+$("analyzeBtn").addEventListener(
+  "click",
+  async () => {
+    const button = $("analyzeBtn");
+
+    button.disabled = true;
+
+    try {
+      const checks = readinessChecks();
+
+      if (
+        !checks[0].ok ||
+        (!checks[1].ok && !checks[2].ok)
+      ) {
+        throw new Error(
+          "Confirm enough information to run a cost " +
+          "or inventory comparison before analysis."
+        );
+      }
+
+      const form = uploadForm();
+
+      form.append(
+        "store_mapping",
+        JSON.stringify(
+          selectedMapping("store")
+        )
+      );
+
+      form.append(
+        "supplier_mapping",
+        JSON.stringify(
+          selectedMapping("supplier")
+        )
+      );
+
+      form.append(
+        "inventory_config",
+        JSON.stringify(
+          analysisConfig()
+        )
+      );
+
+      $("notice").textContent = "Analyzing...";
+
+      const data = await requestJson(
+        "/analyze",
+        form
+      );
+
+      showResults(data);
+
+      $("notice").textContent =
+        data.sample_analysis
+          ? (
+            "Official sample analysis completed."
+          )
+          : "Analysis complete.";
+
+
+    } catch (error) {
+      $("notice").textContent =
+        error.message;
+
+
+    } finally {
+      refreshAnalyzeButton();
+    }
+  }
+);
+
+
+// CSV formula-injection protection.
+
+function csvCell(value) {
+  let raw = String(value ?? "");
+
+  if (
+    /^[\s\u0000-\u001f]*[=+\-@]/.test(raw)
+  ) {
+    raw = "'" + raw;
+  }
+
+  return (
+    '"' +
+    raw.replace(/"/g, '""') +
+    '"'
+  );
+}
+
+
+function downloadCsv(filename, data) {
+  const content =
+    "\ufeff" +
+    data.map(
+      row => row.map(csvCell).join(",")
+    ).join("\r\n");
+
+  const blob = new Blob(
+    [content],
+    {
+      type: "text/csv;charset=utf-8"
+    }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+
+  setTimeout(
+    () => URL.revokeObjectURL(url),
+    1000
+  );
+}
+
+
+// Review-candidate CSV.
+
+$("csvBtn").addEventListener(
+  "click",
+  () => {
+    if (
+      !latestResult ||
+      latestResult.export_policy?.file_blocked
+    ) {
+      return;
+    }
+
+    const candidates =
+      latestResult.export_candidates || [];
+
+    if (!candidates.length) {
+      return;
+    }
+
+    const cols = [
+      "sku",
+      "proposed_cost",
+      "currency",
+      "stock_action",
+      "proposed_published_qty",
+      "export_purpose"
+    ];
+
+    downloadCsv(
+      "fileguard-review-candidates.csv",
+      [
+        cols,
+        ...candidates.map(
+          candidate =>
+            cols.map(key => candidate[key])
+        )
+      ]
+    );
+  }
+);
+
+
+// All findings CSV.
+
+$("findingsCsvBtn").addEventListener(
+  "click",
+  () => {
+    if (!latestResult) {
+      return;
+    }
+
+    const cols = [
+      "record_type",
+      "status",
+      "sku",
+      "product_name",
+      "match_method",
+      "current_cost",
+      "new_cost",
+      "currency",
+      "supplier_currency",
+      "cost_change_percent",
+      "gross_margin_percent",
+      "risk_messages",
+      "export_purpose"
+    ];
+
+    const checks = (
+      latestResult.file_checks || []
+    ).map(check => {
+      const entry = {
+        record_type: "FILE_CHECK",
+        status: "BLOCK",
+        risk_messages: check.message,
+        export_purpose:
+          "INVESTIGATION_ONLY_NOT_FOR_IMPORT"
+      };
+
+      return cols.map(
+        key => entry[key] ?? ""
+      );
+    });
+
+    const findings = sortedRows(
+      latestResult.rows
+    )
+      .filter(row => row.status !== "SAFE")
+      .map(row => [
+        "CATALOG_ROW",
+        row.status,
+        row.sku,
+        row.product_name,
+        row.match_method,
+        row.current_cost,
+        row.new_cost,
+        row.currency,
+        row.supplier_currency,
+        row.cost_analysis?.cost_change_percent ?? "",
+        row.cost_analysis?.gross_margin_percent ?? "",
+        riskMessages(row),
+        "INVESTIGATION_ONLY_NOT_FOR_IMPORT"
+      ]);
+
+    downloadCsv(
+      "fileguard-all-findings.csv",
+      [
+        cols,
+        ...checks,
+        ...findings
+      ]
+    );
+  }
+);
+
+
+// Branded PDF-ready report.
+
+$("reportBtn").addEventListener(
+  "click",
+  () => {
+    if (!latestResult) {
+      return;
+    }
+
+    const agencyName = $("agency").value.trim() || "FileGuard";
+
+    $("reportAgency").textContent =
+      agencyName;
+
+    $("reportFooterAgency").textContent =
+      agencyName;
+
+    $("reportClient").textContent =
+      $("client").value.trim() || "Client";
+
+    $("reportDate").textContent =
+      new Intl.DateTimeFormat(
+        "en-GB",
+        {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        }
+      ).format(new Date());
+
+    const data = latestResult;
+    const stats = data.summary;
+    const checks = data.file_checks || [];
+
+    $("reportDecision").textContent =
+      checks.length
+        ? "FILE-LEVEL BLOCK"
+        : stats.critical
+          ? "CRITICAL FINDINGS DETECTED"
+          : stats.review
+            ? "MANUAL REVIEW REQUIRED"
+            : "NO FLAGGED ANOMALIES";
+
+    $("reportStats").textContent =
+      stats.total + " rows · " +
+      stats.critical + " CRITICAL · " +
+      stats.review + " REVIEW · " +
+      stats.safe + " SAFE";
+
+    const cfg = data.inventory_configuration;
+
+    $("reportConfig").textContent =
+      "Inventory mode: " + cfg.mode +
+      "; buffer: " + cfg.buffer_qty +
+      "; store numbers: " + cfg.store_number_format +
+      "; supplier numbers: " + cfg.supplier_number_format +
+      ".";
+
+    $("reportConfirmations").textContent =
+      "User-confirmed settings: " +
+      (
+        (data.user_confirmations || []).join(" ") ||
+        "None."
+      );
+
+    $("reportThresholds").textContent =
+      "Cost increase over 20% = REVIEW; " +
+      "over 50% = CRITICAL. " +
+      "Gross margin below 30% = REVIEW; " +
+      "below 20% = CRITICAL. " +
+      "Cost checks require verified pack sizes " +
+      "and matching currencies.";
+
+    $("reportExport").textContent =
+      "Review-only candidates: " +
+      (data.export_candidates || []).length +
+      ". Import authorized: NO.";
+
+    $("reportFiles").textContent =
+      "Store: " +
+      (latestPreview?.store.filename || "unknown") +
+      " (" +
+      (latestPreview?.store.rows ?? "?") +
+      " rows) · Supplier: " +
+      (latestPreview?.supplier.filename || "unknown") +
+      " (" +
+      (latestPreview?.supplier.rows ?? "?") +
+      " rows).";
+
+    const flagged = sortedRows(
+      data.rows
+    ).filter(
+      row => row.status !== "SAFE"
+    );
+
+    const entries = [
+      ...checks.map(
+        check =>
+          "FILE CHECK: " + check.message
+      ),
+
+      ...flagged.slice(0, 12).map(row => {
+        const margin =
+          row.cost_analysis?.gross_margin_percent;
+
+        return (
+          row.sku +
+          " (" + row.status + ")" +
+
+          (
+            row.product_name
+              ? " — " + row.product_name
+              : ""
+          ) +
+
+          " · Old cost: " +
+          formatCost(
+            row.current_cost,
+            row.currency,
+            "store"
+          ) +
+
+          " · New cost: " +
+          formatCost(
+            row.new_cost,
+            row.supplier_currency,
+            "supplier"
+          ) +
+
+          " · Gross margin: " +
+          (
+            margin == null
+              ? "n/a"
+              : margin + "%"
+          ) +
+
+          " · " +
+          riskMessages(row)
+        );
+      })
+    ];
+
+    const root = $("reportFindings");
+    root.replaceChildren();
+
+    for (const entry of (
+      entries.length
+        ? entries
+        : ["No configured anomalies were flagged."]
+    )) {
+      const li = document.createElement("li");
+      li.textContent = entry;
+      root.append(li);
+    }
+
+    $("reportCoverage").textContent =
+      flagged.length > 12
+        ? (
+          (flagged.length - 12) +
+          " additional flagged rows are in " +
+          "ALL findings CSV."
+        )
+        : "All flagged rows are in this PDF summary.";
+
+    $("reportSection").hidden = false;
+  }
+);
+
+
+$("printBtn").addEventListener(
+  "click",
+  () => window.print()
+);
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Uploaded catalog files and reports
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.zip
+
+# Logs and temporary files
+*.log
+*.tmp
+temp/
+tmp/
+
+# Editor and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Only the bundled fictional sample catalogs are tracked
+!docs/samples/fileguard-sample-store.csv
+!docs/samples/fileguard-sample-supplier.csv

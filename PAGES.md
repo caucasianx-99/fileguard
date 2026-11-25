@@ -1,0 +1,5 @@
+# Browser edition
+
+GitHub Pages: Settings → Pages → Deploy from a branch → main → /docs. No account or backend is required. For local preview: `python -m http.server 8002 --bind 127.0.0.1 --directory docs`.
+
+The original Python analysis engine is copied unchanged into `docs/engine/`. The browser worker uses Pyodide 0.27.7 (jsDelivr CDN), pandas and pydecimal; XLSX requires openpyxl (via Pyodide or pinned PyPI wheels). Runtime/dependency downloads require internet access. Catalog contents are passed to a local Web Worker and are not posted to any server by application code. CDN code is a third-party trust dependency. Results are in memory; reloading clears them. Manual-review CSV and browser print/PDF remain available. File size and row limits are preserved; large files may be slower or exhaust browser memory. Only analyze authorized data. No store writes. No import approval. Native Python tests do not prove browser compatibility: validate sample preview, analysis and print/export after publishing.
